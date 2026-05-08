@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>План прибирання</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --dark: #1C1B1A; --mid: #5A5855; --soft: #9A9590;
+  --line: #ECEAE5; --page: #F7F6F3; --white: #FFFFFF;
+  --radius: 18px; --accent: #7F77DD; --bg: #EEEDFE;
+}
+html { font-size: 16px; }
+body { font-family: 'DM Sans', sans-serif; background: var(--page); color: var(--dark); min-height: 100vh; max-width: 480px; margin: 0 auto; overflow-x: hidden; }
+
+.header { padding: 50px 22px 18px; background: var(--white); border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 100; }
+.header-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 16px; }
+.app-title { font-family: 'Playfair Display', serif; font-size: 25px; line-height: 1.15; font-weight: 700; color: var(--dark); }
+.app-title span { color: var(--accent); transition: color 0.3s; }
+.ring-wrap { flex-shrink: 0; text-align: center; }
+.ring-label { font-size: 10px; color: var(--soft); margin-top: 2px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; }
+
+.tabs { display: flex; gap: 7px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
+.tabs::-webkit-scrollbar { display: none; }
+.tab { flex-shrink: 0; padding: 7px 13px; border-radius: 99px; border: 1.5px solid var(--line); background: var(--white); cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 12.5px; font-weight: 500; color: var(--soft); transition: all 0.2s; white-space: nowrap; -webkit-tap-highlight-color: transparent; }
+.tab:hover { border-color: var(--accent); color: var(--dark); }
+.tab.active { background: var(--accent); border-color: var(--accent); color: var(--white); }
+.tab.done-tab { opacity: 0.55; }
+.tab.done-tab.active { opacity: 1; }
+
+.main { padding: 22px 18px 130px; }
+
+@keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+.day-hero { border-radius: var(--radius); padding: 24px 20px 20px; margin-bottom: 18px; position: relative; overflow: hidden; background: var(--bg); transition: background 0.3s; animation: fadeUp 0.3s ease; }
+.day-hero::after { content: ''; position: absolute; bottom: -20px; right: -20px; width: 100px; height: 100px; border-radius: 50%; background: var(--accent); opacity: 0.07; }
+.day-badge { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); background: var(--white); padding: 4px 11px; border-radius: 99px; margin-bottom: 10px; transition: color 0.3s; }
+.day-name { font-family: 'Playfair Display', serif; font-size: 30px; font-weight: 700; color: var(--dark); line-height: 1.1; margin-bottom: 10px; }
+.day-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.meta-pill { display: inline-flex; align-items: center; gap: 5px; background: var(--white); padding: 4px 10px; border-radius: 99px; font-size: 12px; font-weight: 500; color: var(--mid); }
+.meta-pill svg { opacity: 0.5; flex-shrink: 0; }
+.meta-pill.honest { color: var(--accent); font-style: italic; font-size: 11px; margin-top: 6px; }
+
+.prog-bar-wrap { margin-top: 14px; background: rgba(255,255,255,0.55); border-radius: 99px; height: 5px; overflow: hidden; }
+.prog-bar { height: 100%; background: var(--accent); border-radius: 99px; transition: width 0.4s cubic-bezier(0.4,0,0.2,1), background 0.3s; }
+.prog-label { font-size: 12px; color: var(--accent); font-weight: 600; margin-top: 5px; text-align: right; transition: color 0.3s; }
+
+.section-label { font-size: 10.5px; font-weight: 600; letter-spacing: 0.13em; text-transform: uppercase; color: var(--soft); margin-bottom: 9px; padding-left: 3px; }
+.checklist { list-style: none; display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+
+.check-item { display: flex; align-items: flex-start; gap: 12px; background: var(--white); border-radius: 14px; padding: 13px 14px; border: 1.5px solid var(--line); cursor: pointer; transition: all 0.2s ease; -webkit-tap-highlight-color: transparent; user-select: none; }
+.check-item:active { transform: scale(0.985); }
+.check-item:hover { border-color: var(--accent); }
+.check-item.checked { background: var(--bg); border-color: var(--accent); opacity: 0.7; }
+.check-item.checked .check-text { text-decoration: line-through; color: var(--soft); }
+.check-box { width: 23px; height: 23px; flex-shrink: 0; border-radius: 50%; border: 2px solid var(--line); background: var(--white); display: flex; align-items: center; justify-content: center; transition: all 0.2s; margin-top: 1px; }
+.check-item.checked .check-box { background: var(--accent); border-color: var(--accent); }
+.check-icon { display: none; }
+.check-item.checked .check-icon { display: block; }
+.check-body { flex: 1; min-width: 0; }
+.check-text { font-size: 14.5px; font-weight: 400; line-height: 1.4; color: var(--dark); transition: all 0.2s; display: block; }
+.check-hint { font-size: 11.5px; color: var(--soft); margin-top: 2px; display: block; font-style: italic; }
+.task-time-badge { flex-shrink: 0; font-size: 11px; font-weight: 600; color: var(--soft); background: var(--page); padding: 3px 8px; border-radius: 99px; margin-top: 2px; white-space: nowrap; align-self: flex-start; }
+.check-item.checked .task-time-badge { opacity: 0.4; }
+
+.tip-card { background: var(--white); border-radius: 14px; border: 1.5px solid var(--line); border-left: 3px solid var(--accent); padding: 14px 16px; margin-bottom: 16px; transition: border-color 0.3s; }
+.tip-label { font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); margin-bottom: 4px; transition: color 0.3s; }
+.tip-text { font-size: 13.5px; line-height: 1.6; color: var(--mid); }
+
+.laundry-info { background: var(--white); border-radius: 14px; border: 1.5px solid var(--line); padding: 16px; margin-bottom: 16px; }
+.laundry-info-title { font-size: 13px; font-weight: 600; color: var(--dark); margin-bottom: 10px; }
+.laundry-step { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--line); }
+.laundry-step:last-child { border-bottom: none; }
+.laundry-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.laundry-step-text { font-size: 13px; color: var(--mid); flex: 1; }
+.laundry-step-note { font-size: 11px; color: var(--soft); font-style: italic; }
+.laundry-step-time { font-size: 12px; font-weight: 600; color: var(--dark); white-space: nowrap; }
+
+.complete-btn { width: 100%; padding: 16px; border-radius: 14px; border: none; background: var(--accent); color: var(--white); font-family: 'DM Sans', sans-serif; font-size: 15.5px; font-weight: 600; cursor: pointer; transition: all 0.2s; letter-spacing: 0.01em; -webkit-tap-highlight-color: transparent; }
+.complete-btn:hover { filter: brightness(1.08); transform: translateY(-1px); }
+.complete-btn:active { transform: scale(0.98); }
+.complete-btn.all-done { background: #5A8F1E; }
+
+.reset-row { text-align: center; margin-top: 9px; }
+.reset-btn { background: none; border: none; font-size: 12.5px; color: var(--soft); cursor: pointer; font-family: 'DM Sans', sans-serif; text-decoration: underline; text-underline-offset: 3px; -webkit-tap-highlight-color: transparent; }
+
+.done-banner { display: none; border-radius: var(--radius); padding: 24px 20px; text-align: center; margin-bottom: 16px; color: white; background: linear-gradient(135deg, #5A8F1E, #1D9E75); }
+.done-banner.show { display: block; animation: fadeUp 0.4s ease; }
+.done-banner h2 { font-family: 'Playfair Display', serif; font-size: 22px; margin-bottom: 5px; }
+.done-banner p { font-size: 13.5px; opacity: 0.88; line-height: 1.6; }
+
+.bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px; background: var(--white); border-top: 1px solid var(--line); padding: 10px 18px 22px; display: flex; gap: 8px; z-index: 200; }
+.nav-btn { flex: 1; padding: 12px 8px; border-radius: 12px; border: 1.5px solid var(--line); background: var(--white); font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; color: var(--mid); cursor: pointer; transition: all 0.2s; -webkit-tap-highlight-color: transparent; }
+.nav-btn.nav-next { background: var(--accent); border-color: var(--accent); color: var(--white); flex: 2; transition: background 0.3s, border-color 0.3s; }
+.nav-btn:disabled { opacity: 0.3; cursor: default; }
+
+.week-summary { background: var(--white); border: 1.5px solid var(--line); border-radius: var(--radius); padding: 20px; margin-bottom: 18px; }
+.summary-title { font-family: 'Playfair Display', serif; font-size: 21px; color: var(--dark); margin-bottom: 3px; }
+.summary-sub { font-size: 13px; color: var(--soft); margin-bottom: 14px; }
+.week-bar-wrap { background: var(--line); border-radius: 99px; height: 6px; margin-bottom: 6px; overflow: hidden; }
+.week-bar { height: 100%; border-radius: 99px; background: var(--accent); transition: width 0.5s ease; }
+.summary-stats { display: flex; margin-top: 14px; border-top: 1px solid var(--line); padding-top: 14px; }
+.stat { flex: 1; text-align: center; }
+.stat + .stat { border-left: 1px solid var(--line); }
+.stat-num { font-size: 22px; font-weight: 700; color: var(--dark); }
+.stat-label { font-size: 10.5px; color: var(--soft); text-transform: uppercase; letter-spacing: 0.05em; line-height: 1.4; margin-top: 1px; }
+
+.honest-note { background: #FFF8EC; border: 1.5px solid #F0D9A0; border-radius: 12px; padding: 12px 14px; margin-bottom: 18px; font-size: 13px; color: #7A5C10; line-height: 1.6; }
+.honest-note strong { font-weight: 600; }
+
+.overview-grid { display: flex; flex-direction: column; gap: 9px; }
+.overview-card { display: flex; align-items: center; gap: 13px; background: var(--white); border-radius: 14px; padding: 14px 15px; border: 1.5px solid var(--line); cursor: pointer; transition: all 0.2s; -webkit-tap-highlight-color: transparent; }
+.overview-card:hover { border-color: var(--accent); transform: translateX(2px); }
+.ov-dot { width: 42px; height: 42px; border-radius: 11px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+.ov-info { flex: 1; }
+.ov-day { font-size: 10.5px; font-weight: 600; color: var(--soft); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 1px; }
+.ov-title { font-size: 15px; font-weight: 500; color: var(--dark); margin-bottom: 1px; }
+.ov-meta { font-size: 11.5px; color: var(--soft); }
+.ov-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+.ov-status { font-size: 11.5px; font-weight: 600; padding: 3px 9px; border-radius: 99px; white-space: nowrap; }
+.ov-status.todo { background: var(--line); color: var(--soft); }
+.ov-status.in-progress { background: #FFF3CD; color: #856404; }
+.ov-status.done { background: #D4EDDA; color: #155724; }
+.ov-time { font-size: 11px; color: var(--soft); }
+
+.reset-week-card { background: var(--white); border: 1.5px solid var(--line); border-radius: 14px; padding: 18px; margin-top: 14px; text-align: center; }
+.reset-week-title { font-size: 14.5px; font-weight: 600; color: var(--dark); margin-bottom: 4px; }
+.reset-week-sub { font-size: 12.5px; color: var(--soft); margin-bottom: 14px; line-height: 1.5; }
+.reset-week-btn { width: 100%; padding: 13px; border-radius: 12px; border: 1.5px solid var(--line); background: var(--white); font-family: 'DM Sans', sans-serif; font-size: 14.5px; font-weight: 600; color: var(--dark); cursor: pointer; transition: all 0.2s; -webkit-tap-highlight-color: transparent; }
+.reset-week-btn:hover { background: #FFF3CD; border-color: #A86A10; color: #A86A10; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <div><div class="app-title">Мій план<br><span>прибирання</span></div></div>
+    <div class="ring-wrap">
+      <svg width="52" height="52" viewBox="0 0 52 52">
+        <circle cx="26" cy="26" r="21" fill="none" stroke="#ECEAE5" stroke-width="4"/>
+        <circle id="ring" cx="26" cy="26" r="21" fill="none" stroke="#7F77DD" stroke-width="4"
+          stroke-dasharray="131.95" stroke-dashoffset="131.95" stroke-linecap="round"
+          transform="rotate(-90 26 26)" style="transition: stroke-dashoffset 0.5s ease, stroke 0.3s;"/>
+        <text x="26" y="31" text-anchor="middle" font-family="DM Sans" font-size="12" font-weight="600" fill="#1C1B1A" id="ring-pct">0%</text>
+      </svg>
+      <div class="ring-label">Прогрес</div>
+    </div>
+  </div>
+  <div class="tabs" id="tabs"><button class="tab active" onclick="showDay(-1)">Огляд</button></div>
+</div>
+
+<div class="main" id="main-content"></div>
+
+<div class="bottom-nav" id="bottom-nav" style="display:none;">
+  <button class="nav-btn" id="btn-prev" onclick="prevDay()">← Назад</button>
+  <button class="nav-btn nav-next" id="btn-next" onclick="nextDay()">Вперед →</button>
+</div>
+
+<script>
+const DAYS = [
+  {
+    num:1, label:"День 1", title:"Кухня",
+    activeTime:"~30 хв", honestNote:"Якщо посуду багато — може бути 40 хв",
+    icon:"🍽", colors:{accent:"#7F77DD",bg:"#EEEDFE"},
+    tasks:[
+      {text:"Помити посуд", time:"10–20 хв", hint:"Спочатку посуд — тоді раковина має сенс"},
+      {text:"Помити та висушити раковину", time:"5 хв"},
+      {text:"Протерти стільниці та плиту", time:"5 хв"},
+      {text:"Протерти фасади шафок зовні", time:"3 хв"},
+      {text:"Протерти холодильник зовні", time:"2 хв"},
+      {text:"Винести сміття", time:"2 хв"},
+    ],
+    tip:"Починай із посуду — раковина звільниться і решта піде набагато швидше.",
+  },
+  {
+    num:2, label:"День 2", title:"Ванна",
+    activeTime:"~25 хв", honestNote:"Тільки ванна — без прання, чесно",
+    icon:"🚿", colors:{accent:"#1D9E75",bg:"#E1F5EE"},
+    tasks:[
+      {text:"Почистити унітаз", time:"5 хв"},
+      {text:"Протерти раковину та кран", time:"5 хв"},
+      {text:"Протерти дзеркало", time:"3 хв"},
+      {text:"Протерти стіни душу або ванни", time:"5 хв"},
+      {text:"Помити підлогу у ванній", time:"5 хв"},
+      {text:"Поміняти рушники", time:"2 хв"},
+    ],
+    tip:"Нанеси засіб на унітаз першим — нехай діє поки прибираєш решту.",
+  },
+  {
+    num:3, label:"День 3", title:"Прання",
+    activeTime:"~30 хв твоєї роботи", honestNote:"Машинка сама пере 1–1.5 год, ти лише чекаєш",
+    icon:"🧺", colors:{accent:"#C4487A",bg:"#FBEAF0"}, isLaundry:true,
+    tasks:[
+      {text:"Відсортувати білизну та завантажити машинку", time:"5 хв"},
+      {text:"Натиснути старт — машинка сама пере", time:"1 хв", hint:"60–90 хвилин без твоєї участі"},
+      {text:"Перекласти у сушарку або повісити", time:"10 хв"},
+      {text:"Скласти та розкласти чисту білизну по місцях", time:"20–30 хв", hint:"Це найдовша частина — закладай чесно"},
+    ],
+    laundrySteps:[
+      {color:"#C4487A", label:"Завантаження", time:"5 хв", note:"Твоя робота"},
+      {color:"#ECEAE5", label:"Прання", time:"60–90 хв", note:"Машинка без тебе"},
+      {color:"#C4487A", label:"Вішання або сушарка", time:"10 хв", note:"Твоя робота"},
+      {color:"#ECEAE5", label:"Сушіння", time:"60–90 хв", note:"Сушарка без тебе"},
+      {color:"#C4487A", label:"Скласти та розкласти по місцях", time:"20–30 хв", note:"Твоя робота"},
+    ],
+    tip:"Запусти машинку вранці — вона зробить своє поки ти займаєшся чимось іншим. Складай ввечері.",
+  },
+  {
+    num:4, label:"День 4", title:"Спальня",
+    activeTime:"~20 хв", honestNote:"Реально легкий день — заслужений відпочинок",
+    icon:"🛏", colors:{accent:"#D85A30",bg:"#FAECE7"},
+    tasks:[
+      {text:"Застелити ліжко", time:"3 хв"},
+      {text:"Протерти пил з поверхонь", time:"5 хв"},
+      {text:"Прибрати речі на місця", time:"5 хв"},
+      {text:"Пропилосити підлогу", time:"5 хв"},
+      {text:"Провітрити кімнату 10 хвилин", time:"1 хв", hint:"Просто відкрий вікно — решта сама"},
+    ],
+    tip:"Застелене ліжко миттєво робить усю кімнату охайною — це найшвидший ефект.",
+  },
+  {
+    num:5, label:"День 5", title:"Гардеробна",
+    activeTime:"~25 хв", honestNote:"Якщо давно не розбирали — може бути 35 хв",
+    icon:"👗", colors:{accent:"#5A8F1E",bg:"#EAF3DE"},
+    tasks:[
+      {text:"Розвісити одяг по категоріях", time:"10 хв"},
+      {text:"Прибрати речі, що лежать не на місці", time:"5 хв"},
+      {text:"Протерти пил з полиць і штанг", time:"5 хв"},
+      {text:"Перевірити непотрібне — скласти в пакет", time:"3 хв"},
+      {text:"Пропилосити або підмести підлогу", time:"3 хв"},
+    ],
+    tip:"Раз на місяць: одна річ не носиться — віддай або прибери. Гардеробна не переповнюватиметься.",
+  },
+  {
+    num:6, label:"День 6", title:"Вітальня",
+    activeTime:"~25 хв", honestNote:"Комфортний день — нічого важкого",
+    icon:"🛋", colors:{accent:"#7F77DD",bg:"#EEEDFE"},
+    tasks:[
+      {text:"Прибрати зайві речі зі столів", time:"5 хв"},
+      {text:"Протерти пил з полиць і телевізора", time:"5 хв"},
+      {text:"Пропилосити диван та подушки", time:"5 хв"},
+      {text:"Пропилосити підлогу", time:"7 хв"},
+      {text:"Розставити подушки та пледи гарно", time:"2 хв"},
+    ],
+    tip:"Прибирай зверху вниз, від дальньої стіни до дверей — не доведеться прибирати двічі.",
+  },
+  {
+    num:7, label:"День 7", title:"Коридор + фінал",
+    activeTime:"~20 хв", honestNote:"Легкий завершальний день тижня",
+    icon:"✨", colors:{accent:"#A86A10",bg:"#FDF3E3"},
+    tasks:[
+      {text:"Розібрати взуття та прибрати по місцях", time:"5 хв"},
+      {text:"Протерти дзеркало та вішалку від пилу", time:"3 хв"},
+      {text:"Помити підлогу в коридорі", time:"5 хв"},
+      {text:"Швидкий обхід усіх кімнат — прибрати дрібниці", time:"5 хв"},
+      {text:"Протерти вимикачі та ручки дверей", time:"2 хв"},
+    ],
+    tip:"Фінальний обхід займає 5 хвилин, але дає відчуття повної чистоти в усій квартирі.",
+  },
+];
+
+const state = DAYS.map(d => d.tasks.map(() => false));
+let currentDay = -1;
+
+function saveState() { try { localStorage.setItem('cp_uk3', JSON.stringify(state)); } catch(e){} }
+function loadState() {
+  try {
+    const s = localStorage.getItem('cp_uk3');
+    if (s) { const p = JSON.parse(s); p.forEach((arr,di) => { if(state[di]) arr.forEach((v,ti) => { if(state[di][ti]!==undefined) state[di][ti]=v; }); }); }
+  } catch(e){}
+}
+
+const totalTasks = () => DAYS.reduce((s,d) => s+d.tasks.length, 0);
+const doneTasks  = () => state.reduce((s,arr) => s+arr.filter(Boolean).length, 0);
+const dayDone    = di => state[di].every(Boolean);
+const dayStarted = di => state[di].some(Boolean);
+const dayProgress= di => state[di].filter(Boolean).length;
+
+function updateRing() {
+  const pct = Math.round(doneTasks()/totalTasks()*100);
+  document.getElementById('ring').style.strokeDashoffset = 131.95 - (131.95*pct/100);
+  document.getElementById('ring-pct').textContent = pct+'%';
+  document.getElementById('ring').style.stroke = currentDay>=0 ? DAYS[currentDay].colors.accent : '#7F77DD';
+}
+
+function renderTabs() {
+  const tabs = document.getElementById('tabs');
+  DAYS.forEach((d,i) => {
+    const btn = document.createElement('button');
+    btn.className='tab'; btn.dataset.day=i; btn.textContent=d.label;
+    btn.onclick = () => showDay(i);
+    tabs.appendChild(btn);
+  });
+}
+
+function showDay(idx) {
+  currentDay = idx;
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', i===(idx===-1?0:idx+1)));
+  document.querySelectorAll('.tab[data-day]').forEach(t => t.classList.toggle('done-tab', dayDone(parseInt(t.dataset.day))));
+  const a = idx>=0 ? DAYS[idx].colors.accent : '#7F77DD';
+  const b = idx>=0 ? DAYS[idx].colors.bg : '#EEEDFE';
+  document.documentElement.style.setProperty('--accent', a);
+  document.documentElement.style.setProperty('--bg', b);
+  renderMain(); updateNav();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function renderMain() {
+  document.getElementById('bottom-nav').style.display = currentDay===-1 ? 'none' : 'flex';
+  document.getElementById('main-content').innerHTML = currentDay===-1 ? renderOverview() : renderDay(currentDay);
+  updateRing();
+}
+
+function renderOverview() {
+  const done=doneTasks(), total=totalTasks(), pct=Math.round(done/total*100);
+  const daysDone=DAYS.filter((_,i)=>dayDone(i)).length;
+  const cards = DAYS.map((d,i) => {
+    const prog=dayProgress(i), tot=d.tasks.length;
+    let sc='todo', st='Не розпочато';
+    if(dayDone(i)){sc='done';st='Готово';}
+    else if(dayStarted(i)){sc='in-progress';st=prog+'/'+tot;}
+    return `<div class="overview-card" onclick="showDay(${i})">
+      <div class="ov-dot" style="background:${d.colors.bg}">${d.icon}</div>
+      <div class="ov-info">
+        <div class="ov-day">${d.label}</div>
+        <div class="ov-title">${d.title}</div>
+        <div class="ov-meta">${tot} завдань</div>
+      </div>
+      <div class="ov-right">
+        <div class="ov-status ${sc}">${st}</div>
+        <div class="ov-time">${d.activeTime}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  return `
+    <div class="week-summary">
+      <div class="summary-title">Мій тиждень</div>
+      <div class="summary-sub">Натисни на день, щоб почати</div>
+      <div class="week-bar-wrap"><div class="week-bar" style="width:${pct}%"></div></div>
+      <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--soft);margin-bottom:4px">
+        <span>${done} із ${total} завдань</span><span>${pct}%</span>
+      </div>
+      <div class="summary-stats">
+        <div class="stat"><div class="stat-num">${daysDone}</div><div class="stat-label">Днів<br>готово</div></div>
+        <div class="stat"><div class="stat-num">${done}</div><div class="stat-label">Завдань<br>виконано</div></div>
+        <div class="stat"><div class="stat-num">${total-done}</div><div class="stat-label">Ще<br>залишилось</div></div>
+      </div>
+    </div>
+    <div class="honest-note">
+      <strong>Чесно про час:</strong> Кожен день — 20–30 хв твоєї активної роботи. День прання: 30 хв роботи, але машинка пере ще 2–3 год сама. Нічого надважкого — це реально.
+    </div>
+    <div class="overview-grid">${cards}</div>
+    <div class="reset-week-card">
+      <div class="reset-week-title">Новий тиждень — чистий старт</div>
+      <div class="reset-week-sub">Завершила тиждень? Скидай все і починай наступний тиждень із нуля.</div>
+      <button class="reset-week-btn" onclick="resetWeek()">Почати новий тиждень</button>
+    </div>`;
+}
+
+function renderDay(di) {
+  const d=DAYS[di], prog=dayProgress(di), total=d.tasks.length;
+  const pct=Math.round(prog/total*100), allDone=dayDone(di);
+
+  const tasks = d.tasks.map((task,ti) => {
+    const checked=state[di][ti];
+    const hint = task.hint ? `<span class="check-hint">${task.hint}</span>` : '';
+    return `<li class="check-item${checked?' checked':''}" onclick="toggleTask(${di},${ti})">
+      <div class="check-box">
+        <svg class="check-icon" width="11" height="11" viewBox="0 0 12 12" fill="none">
+          <polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="check-body"><span class="check-text">${task.text}</span>${hint}</div>
+      <div class="task-time-badge">${task.time}</div>
+    </li>`;
+  }).join('');
+
+  const laundryBlock = d.isLaundry ? `
+    <div class="laundry-info">
+      <div class="laundry-info-title">Як розподілений твій час сьогодні:</div>
+      ${d.laundrySteps.map(s=>`
+        <div class="laundry-step">
+          <div class="laundry-dot" style="background:${s.color}"></div>
+          <div style="flex:1"><div class="laundry-step-text">${s.label}</div><div class="laundry-step-note">${s.note}</div></div>
+          <div class="laundry-step-time">${s.time}</div>
+        </div>`).join('')}
+    </div>` : '';
+
+  const doneBanner = allDone ? `
+    <div class="done-banner show">
+      <h2>Чудово!</h2>
+      <p>${d.title} — готово.<br>Ти молодець! Переходь до наступного дня.</p>
+    </div>` : '';
+
+  return `
+    <div class="day-hero">
+      <div class="day-badge">${d.label}</div>
+      <div class="day-name">${d.title}</div>
+      <div class="day-meta">
+        <div class="meta-pill">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          ${d.activeTime} твоєї роботи
+        </div>
+        <div class="meta-pill">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          ${prog} із ${total}
+        </div>
+      </div>
+      <div class="meta-pill honest">${d.honestNote}</div>
+      <div class="prog-bar-wrap"><div class="prog-bar" style="width:${pct}%"></div></div>
+      <div class="prog-label">${pct}%</div>
+    </div>
+    ${doneBanner}
+    ${laundryBlock}
+    <div class="section-label">Завдання</div>
+    <ul class="checklist">${tasks}</ul>
+    <div class="tip-card">
+      <div class="tip-label">Порада дня</div>
+      <div class="tip-text">${d.tip}</div>
+    </div>
+    <button class="complete-btn${allDone?' all-done':''}" onclick="markAllDay(${di})">
+      ${allDone ? 'День завершено!' : 'Позначити все виконаним'}
+    </button>
+    <div class="reset-row"><button class="reset-btn" onclick="resetDay(${di})">Скинути цей день</button></div>`;
+}
+
+function toggleTask(di,ti){ state[di][ti]=!state[di][ti]; saveState(); renderMain(); }
+function markAllDay(di){ state[di].fill(true); saveState(); renderMain(); }
+function resetDay(di){ state[di].fill(false); saveState(); renderMain(); }
+function resetWeek(){
+  if(!confirm('Скинути весь прогрес тижня і почати з нуля?')) return;
+  state.forEach(arr=>arr.fill(false)); saveState(); renderMain();
+}
+function prevDay(){ currentDay>0 ? showDay(currentDay-1) : showDay(-1); }
+function nextDay(){ if(currentDay<DAYS.length-1) showDay(currentDay+1); }
+function updateNav(){
+  const prev=document.getElementById('btn-prev'), next=document.getElementById('btn-next');
+  if(!prev||!next) return;
+  prev.textContent = currentDay===0 ? '← Огляд' : '← Назад';
+  next.disabled = currentDay>=DAYS.length-1;
+  next.textContent = currentDay>=DAYS.length-1 ? 'Готово!' : 'Вперед →';
+}
+
+loadState(); renderTabs(); renderMain();
+</script>
+</body>
+</html>
